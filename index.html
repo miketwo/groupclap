@@ -74,12 +74,22 @@
       window.onload = () => {
         const socket = io();
         const CLAP_DURATION = 2 * 1000; // matches css keyframes
+        let index = Math.floor(Math.random() * 10);
+
+        function getRandomArbitrary(min, max) {
+          return Math.random() * (max - min) + min;
+        }
 
         // emit clap
         document.querySelector("#clapButton").addEventListener("click", e => {
           e.preventDefault();
           socket.emit("clap");
         });
+
+        // AUTO-CLICKER FOR TESTING
+        // setInterval(() => {
+        //   clapButton.click();
+        // }, getRandomArbitrary(300, 700));
 
         // respond to claps
         socket.on("clap", displayClap);
@@ -91,6 +101,7 @@
 
           // apply classes
           clapEl.classList.add("clap");
+          console.log(socketId, socket.id);
           if (socketId === socket.id) {
             clapEl.classList.add("mine");
           }
@@ -105,7 +116,7 @@
           clapEl.appendChild(clapContent);
           clapZoneEl.appendChild(clapEl);
 
-          playClapSound();
+          playClapSound(socketId);
 
           // remove from DOM
           setTimeout(() => {
@@ -113,15 +124,34 @@
           }, CLAP_DURATION);
         }
 
-        function playClapSound() {
+        function playClapSound(socketId) {
           const clapFiles = [
             "clap1.mp3",
             "clap2.mp3",
             "clap3.mp3",
-            "clap4.mp3"
+            "clap4.mp3",
+            "clap5.wav",
+            "clap10.mp3",
+            "clap11.mp3",
+            "clap12.mp3",
+            "clap13.mp3",
+            "clap14.mp3",
+            "clap15.mp3",
+            "clap16.mp3",
+            "clap17.mp3",
+            "clap18.mp3",
+            "clap19.mp3",
+            "clap20.mp3",
+            "clap21.mp3",
+            "clap22.mp3",
           ];
-          const randomIndex = Math.floor(Math.random() * clapFiles.length);
-          const randomClapFile = clapFiles[randomIndex];
+          // const randomIndex = Math.floor(Math.random() * clapFiles.length);
+          // const randomClapFile = clapFiles[randomIndex];
+
+          index += 1;
+          uniqueIndex = (index + socketId.charCodeAt(0)) % clapFiles.length;
+          console.log(index, uniqueIndex, socketId.charCodeAt(0));
+          const randomClapFile = clapFiles[uniqueIndex];
           var audio = new Audio(randomClapFile);
           audio.play();
           audio.remove();
