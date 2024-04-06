@@ -101,7 +101,6 @@
 
           // apply classes
           clapEl.classList.add("clap");
-          console.log(socketId, socket.id);
           if (socketId === socket.id) {
             clapEl.classList.add("mine");
           }
@@ -150,7 +149,6 @@
 
           index += 1;
           uniqueIndex = (index + socketId.charCodeAt(0)) % clapFiles.length;
-          console.log(index, uniqueIndex, socketId.charCodeAt(0));
           const randomClapFile = clapFiles[uniqueIndex];
           var audio = new Audio(randomClapFile);
           audio.play();
