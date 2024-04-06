@@ -1,6 +1,6 @@
 FROM node:12
 
-WORKDIR /app
+WORKDIR /workspaces/groupclap
 
 COPY package*.json ./
 
