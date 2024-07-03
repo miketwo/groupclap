@@ -8,6 +8,7 @@
 
     <style>
       html,
+
       body {
         margin: 0;
         font-size: 40px;
@@ -19,6 +20,14 @@
         height: 100vh;
         width: 100vw;
       }
+
+      #clapContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+
       #clapButton {
         background: #5bb65b;
         color: white;
@@ -67,6 +76,36 @@
         top: 0;
         left: 0;
       }
+      #applauseGauge {
+        width: 80%;
+        height: 30px;
+        background-color: #f0f0f0;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      #gaugeBar {
+        width: 0;
+        height: 100%;
+        background-color: #5bb65b;
+        transition: width 0.5s ease-in-out;
+      }
+
+      #gaugeLabels {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 14px;
+        color: #333;
+      }
     </style>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -75,9 +114,63 @@
         const socket = io();
         const CLAP_DURATION = 2 * 1000; // matches css keyframes
         let index = Math.floor(Math.random() * 10);
+        let clapTimestamps = [];
+
+        const clapFrequencyUpdater = setInterval(() => {
+          if (clapTimestamps.length > 1) {
+              const freq = getFrequency();
+              console.log("Frequency: ", freq, "clapTimestamps size: ", clapTimestamps.length)
+              updateApplauseGauge(freq);
+            }
+        }, 1000);
+
+        const getFrequency = () => {
+          // filter claps that are older than 10 seconds
+          const SECONDS_TO_KEEP = 5;
+          const now = new Date().getTime();
+          const xSecondsAgo = now - (SECONDS_TO_KEEP*1000);
+          clapTimestamps = clapTimestamps.filter(ts => ts > xSecondsAgo);
+
+          // calculate frequency
+          const frequency = clapTimestamps.length / SECONDS_TO_KEEP;
+          return frequency;
+        }
 
         function getRandomArbitrary(min, max) {
           return Math.random() * (max - min) + min;
+        }
+
+        function isNumber(n) {
+          return !isNaN(parseFloat(n)) && isFinite(n);
+        }
+
+        function updateApplauseGauge(frequency) {
+          const gaugeBar = document.getElementById('gaugeBar');
+          let gaugeLevel = 0;
+          if (!isNumber(frequency)) {
+            return;
+          }
+
+          const DIFFICULTY_FACTOR = 1.1;
+          frequency = frequency / DIFFICULTY_FACTOR;
+          console.log("Scaled: ", frequency);
+          if (frequency >= 0 && frequency < 1) {
+            gaugeLevel = 0;
+          } else if (frequency >= 1 && frequency < 2) {
+            gaugeLevel = 10;
+          } else if (frequency >= 2 && frequency < 3) {
+            gaugeLevel = 25;
+          } else if (frequency >= 3 && frequency < 4) {
+            gaugeLevel = 43;
+          } else if (frequency >= 4 && frequency < 6) {
+            gaugeLevel = 60;
+          } else if (frequency >= 6 && frequency < 8) {
+            gaugeLevel = 78;
+          } else {
+            gaugeLevel = 100;
+          }
+
+          gaugeBar.style.width = `${gaugeLevel}%`;
         }
 
         // emit clap
@@ -89,7 +182,7 @@
         // AUTO-CLICKER FOR TESTING
         // setInterval(() => {
         //   clapButton.click();
-        // }, getRandomArbitrary(300, 700));
+        // }, 300);
 
         // respond to claps
         socket.on("clap", displayClap);
@@ -121,6 +214,10 @@
           setTimeout(() => {
             clapEl.remove();
           }, CLAP_DURATION);
+
+            // Calculate clap frequency
+            clapTimestamps.push(new Date(clap.ts).getTime());
+            // console.log(clapTimestamps);
         }
 
         function playClapSound(socketId) {
@@ -166,11 +263,21 @@
   <body>
     <main>
       <div id="clapZone"></div>
-      <button id="clapButton">CLAP!</button>
+      <div id="clapContainer">
+        <div id="applauseGauge">
+          <div id="gaugeBar"></div>
+          <div id="gaugeLabels">
+            <span>Slow Clap</span>
+            <span>Light Applause</span>
+            <span>Applause</span>
+            <span>Standing Ovation</span>
+            <span>Raucous</span>
+            <span>DANK</span>
+          </div>
+        </div>
+        <button id="clapButton">CLAP!</button>
+      </div>
       <div id="clappersCount">0 Clappers</div>
-      <!-- <audio controls>
-        <source src="clap1.mp3" type="audio/mpeg" />
-      </audio> -->
     </main>
   </body>
 </html>

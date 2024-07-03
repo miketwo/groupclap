@@ -2,3 +2,9 @@
 
 All credit to [Frank Albenesius](https://github.com/frankalbenesius?tab=repositories) for this magical piece of code.
 
+## Development
+
+To test locally:
+`npm start`
+
+To deploy:
